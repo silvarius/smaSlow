@@ -1,5 +1,22 @@
 # Changelogs – Projet smaSlow
 
+## 0-6-0 – 2026-05-04
+
+### Remplacement de gb.data.leverage par la valeur de config
+
+- **Source du levier modifiée** : `gb.data.leverage` s'est avéré non fiable en mode simulation. La valeur est désormais lue depuis `gb.data.pairLedger.whatstrat.LEVERAGE` (config locale de la paire).
+  - Lecture en Section 2 : `const leverage = gb.data.pairLedger.whatstrat.LEVERAGE`
+  - `gb.data.leverage` est conservé dans le dump Section 1 à titre d'observation comparative.
+- **Nouveau log** : `[LOCALES] LEVERAGE` ajouté dans le dump Section 1 pour tracer la valeur lue depuis la config.
+
+### Guard sur la valeur LEVERAGE
+
+- **Nouveau guard en Section 4** : si `LEVERAGE` est nul ou non défini (valeur par défaut `0` dans config.js), toute entrée en position est bloquée et un avertissement est logué : `[WARN] LEVERAGE non défini ou nul dans la config – entrée en position bloquée.`
+- Le guard n'affecte pas la gestion des positions ouvertes (TP/SL restent actifs), car la fermeture de position ne nécessite pas la valeur du levier.
+- L'ancienne Section 4 (recherche de signal d'entrée) devient Section 5 en conséquence.
+
+---
+
 ## 0-5-0 – 2026-05-02
 
 ### Intégration du module futureGbSimTools

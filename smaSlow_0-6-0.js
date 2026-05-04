@@ -1,15 +1,17 @@
 // ============================================================
 //  Gunbot Custom Strategy – Futures Properties & Methods Test
-//  Version : 0-5-0  (alpha)
+//  Version : 0-6-0  (alpha)
 //  Objet   : Tester les propriétés Futures exposées par Gunbot
 //            et les méthodes d'ordres market (buy / sell / close)
 //            + setTimeScaleMark sur signaux d'entrée
-//  Modif   : Intégration du module futureGbSimTools pour la
-//            reconstruction de currentSide, currentQty et
-//            totalPositionInitialMargin en mode simulation
+//  Modif   : Remplacement de gb.data.leverage par
+//            gb.data.pairLedger.whatstrat.LEVERAGE
+//            (gb.data.leverage non fiable en simulation)
+//            Guard sur LEVERAGE nul/non défini :
+//            bloque les entrées en position, laisse actifs TP/SL
 // ============================================================
 
-const strategyVersion = "0-5-0";
+const strategyVersion = "0-6-0";
 
 // ──────────────────────────────────────────────────────────────
 //  SECTION 0 – CHARGEMENT DU MODULE futureGbSimTools
@@ -82,6 +84,9 @@ function logAllProperties() {
     console.log("[FUTURES] currentSide           :", gb.data.currentSide);
     console.log("[FUTURES] liquidationPrice      :", gb.data.liquidationPrice);
 
+    // --- Propriétés locales (config.js)
+    console.log("[LOCALES] LEVERAGE               :", gb.data.pairLedger.whatstrat.LEVERAGE);
+
     console.log("==========================================================");
 }
 
@@ -107,7 +112,7 @@ const ema1     = gb.data.ema1;
 const atr      = gb.data.atr;
 const pair     = gb.data.pairName;
 const exchange = gb.data.exchangeName;
-const leverage = gb.data.leverage;
+const leverage = gb.data.pairLedger.whatstrat.LEVERAGE;  // levier défini dans config.js pour cette paire
 
 // Propriétés reconstruites par futureGbSimTools en simulation,
 // ou lues nativement sur Gunbot en mode live
@@ -216,7 +221,15 @@ if (side === "short") {
     return;
 }
 
-// ── 4. Recherche d'un signal d'entrée (pas de position ouverte) ──
+// ── 4. Guard levier avant toute entrée en position ───────────
+// LEVERAGE = 0 est la valeur par défaut dans config.js : bloquer les entrées
+// si la valeur n'a pas été configurée pour cette paire.
+if (!leverage || leverage === 0) {
+    console.log("[WARN] LEVERAGE non défini ou nul dans la config – entrée en position bloquée.");
+    return;
+}
+
+// ── 5. Recherche d'un signal d'entrée (pas de position ouverte) ──
 
 if (bid > longEntryThreshold) {
 
