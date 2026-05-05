@@ -1,5 +1,14 @@
 # Changelogs – Projet smaSlow
 
+## 0-6-1 – 2026-05-04
+
+### Correctif : ajout du paramètre `exchange` sur `closeMarket`
+
+- Le paramètre `exchange` est documenté comme optionnel dans la signature `closeMarket(pair, amount, exchange)`, mais s'avère apparemment requis en pratique sur Hyperliquid : sans lui, le signal TP/SL s'affiche bien en console mais l'ordre n'est pas traité par Gunbot.
+- Les 4 appels `closeMarket` (TP long, SL long, TP short, SL short) sont mis à jour : `gb.method.closeMarket(pair, qty, exchange)`.
+
+---
+
 ## 0-6-0 – 2026-05-04
 
 ### Remplacement de gb.data.leverage par la valeur de config
