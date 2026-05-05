@@ -1,5 +1,28 @@
 # Changelogs – Projet smaSlow
 
+## 0-7-0 – 2026-05-05
+
+### Externalisation des paramètres de stratégie en overrides Gunbot
+
+- **Paramètres déplacés de la constante codée en dur vers les overrides `config.js`** (accessibles et modifiables depuis le GUI Gunbot, section "Overrides" de la paire) :
+  - `BASE_SIZE_USDT` (défaut : `100`)
+  - `ATR_MULTIPLIER_ENTRY` (défaut : `0.2`)
+  - `ATR_MULTIPLIER_TP` (défaut : `1`)
+  - `ATR_MULTIPLIER_SL` (défaut : `2`)
+- `LEVERAGE` était déjà lu depuis `pairLedger.whatstrat` depuis la version 0-6-0 ; le pattern est conservé et harmonisé avec les nouveaux paramètres.
+- **Lecture via `gb.data.pairLedger.whatstrat`** : chaque paramètre est lu depuis `strat.<PARAM>` avec `parseFloat()`, et un fallback sur la valeur par défaut est appliqué si la valeur est absente, nulle ou non numérique.
+- **Nouvelle Section 2** dédiée à la lecture des overrides, leur initialisation automatique, et leur validation, avec un bloc `[CONFIG]` logué à chaque cycle affichant la valeur active et la valeur brute lue depuis la config.
+
+### Initialisation automatique des overrides dans config.js
+
+- Au premier cycle (ou si un paramètre est absent), la stratégie détecte les clés manquantes (`=== undefined`) et les écrit automatiquement dans `config.js` avec leur valeur par défaut via `fs.writeFileSync`.
+- Les paramètres déjà présents — y compris ceux modifiés via le GUI — ne sont jamais écrasés.
+- Le fallback sur les valeurs par défaut reste actif pour le cycle courant, le temps que Gunbot recharge `config.js`.
+- Chaque paramètre initialisé est tracé en console : `[CONFIG INIT] Paramètre absent écrit dans config.js : <KEY> = <VALUE>`.
+- En cas d'erreur d'écriture, un message `[CONFIG INIT] Erreur…` est logué et la stratégie continue avec les valeurs par défaut.
+
+---
+
 ## 0-6-1 – 2026-05-04
 
 ### Correctif : ajout du paramètre `exchange` sur `closeMarket`
